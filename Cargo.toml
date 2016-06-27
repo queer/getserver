@@ -1,0 +1,6 @@
+[package]
+name = "getserver"
+version = "0.1.0"
+authors = ["A G <audrey@audrey.lgbt>"]
+
+[dependencies]
