@@ -1,4 +1,4 @@
 [root]
-name = "webserver"
+name = "getserver"
 version = "0.1.0"
 

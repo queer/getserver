@@ -14,7 +14,6 @@ fn main() {
 
 fn read_request(stream: TcpStream) {
     let mut lines: Vec<String> = vec![];
-    
     {
         let mut reader = BufReader::new(&stream);
         for line in reader.by_ref().lines() {
@@ -25,7 +24,6 @@ fn read_request(stream: TcpStream) {
             }
         }
     }
-    
     send_response(stream, lines);
 }
 
@@ -34,22 +32,20 @@ fn send_response(mut stream: TcpStream, lines: Vec<String>) {
     let mut request_initial_header: Vec<String> = vec![];
     for split in request_type_location {
         request_initial_header.push(split.into());
-        println!("[IN] {:?}", split);
     }
 
     let mut response = String::from("HTTP/1.1 ");
     if request_initial_header[0] != "GET" {
+        // If it's not a GET request, give up, because we have no clue how to 
+        // handle it
         response.push_str("501 NOT IMPLEMENTED");
     } else if request_initial_header[2] != "HTTP/1.1" {
+        // If it's not HTTP/1.1, give up, because we don't know how to handle 
+        // it
         response.push_str("505 HTTP VERSION NOT SUPPORTED");
     } else {
+        // Hopefully we know where this file is...
         let ref mut path = request_initial_header[1];
-        /*if path != "/" {
-            response.push_str("404 NOT FOUND");
-        } else {
-            println!("[PROCESSING] Path '/' found:");
-            response.push_str("200 OK\n\n<html><body>Hello, world!</body></html>");
-        }*/
         let final_header_path: String = (if path == "/" { "/index.html" } else { path }).into();
         let mut final_path: String = String::with_capacity(WEBSERVER_ROOT.len() + final_header_path.len());
         final_path.push_str(WEBSERVER_ROOT);
@@ -58,17 +54,18 @@ fn send_response(mut stream: TcpStream, lines: Vec<String>) {
         let file_result = File::open(final_path);
         match file_result {
             Ok(_) => {
+                // Found the file: let's send it to the client
                 let mut file = file_result.unwrap();
                 file.read_to_string(&mut data).unwrap();
                 response.push_str("200 OK\n\n");
                 response.push_str(data.as_str());
             },
             _ => {
+                // Nope, no luck. Give up and cry ;-;
                 response.push_str("404 NOT FOUND");
             },
         }
     }
-    println!("[OUT] {:?}", response);
 
     stream.write_all(response.as_bytes()).unwrap();
 }
