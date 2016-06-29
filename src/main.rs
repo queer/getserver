@@ -2,7 +2,7 @@ use std::io::{Read, Write, BufReader, BufRead};
 use std::net::{TcpListener, TcpStream};
 use std::fs::File;
 
-const WEBSERVER_ROOT: &'static str = "/home/audrey/Projects/webserver/root";
+const WEBSERVER_ROOT: &'static str = "root";
 
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:15973").unwrap();
